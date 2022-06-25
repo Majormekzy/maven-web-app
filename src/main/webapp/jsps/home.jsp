@@ -21,7 +21,7 @@
 	</span>
 	<span style="font-weight: bold;">
 		ACADA Learning, 
-		Alberta, Calgary, Canada
+		Alberta, Calgary, Canada.
 		+1 587 574 2233,
 		info@acadalearning.com
 		<br>
