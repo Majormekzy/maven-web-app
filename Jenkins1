@@ -1,0 +1,43 @@
+node ("")
+{
+def MHD = tool name: "3.8.4"
+	stage ("1. Git clone"){
+	sh "echo start git clone"
+     git "https://github.com/Majormekzy/maven-web-app.git"
+	}
+    stage ("2. Build"){
+	sh "echo building application"
+	sh "${MHD}/bin/mvn package"
+	}
+    stage ("3. Code Quality"){
+	sh "echo executing code quality check"
+	sh "${MHD}/bin/mvn sonar:sonar"
+	}
+stage ("4. Artifactory "){
+	sh "echo backing up application"
+	sh "${MHD}/bin/mvn deploy"
+	}
+stage ("5. Deploy to UAT"){
+	sh "echo testing application"
+	deploy adapters: [tomcat9(credentialsId: 'Tomcat-credential', path: '', url: 'http://3.96.132.77:8080/')], contextPath: null, war: 'target/*.war'
+	}
+stage ("6. Approval"){
+	sh "echo sending request for approval"
+	timeout(time:5, Unit:"DAY"){
+	input message: 'Approval request for production'
+	}
+	}
+stage ("7. Deploy to Prod"){
+	sh "echo deploying application server"
+	deploy adapters: [tomcat9(credentialsId: 'Tomcat-credential', path: '', url: 'http://3.96.132.77:8080/')], contextPath: null, war: 'target/*.war'
+	
+	}
+stage ("8. Email Notification"){
+	sh "echo sending email notification"
+	emailext body: 'This is a notification for build success', subject: 'Build success', to: 'devopsteam@gmail.com'
+}
+stage ("9.Slack notification"){
+   slackSend color: 'good', message: 'Deploy successful', teamDomain: 'Devops', tokenCredentialId: 'Jenkins-slack.bot'
+    
+}
+}
